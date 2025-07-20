@@ -17,6 +17,7 @@ jobs:
     with:
       terraform_action: plan
       environment: dev
+      aws_role: arn:aws:iam::123456789012:role/dummy-role
 
   apply-dev:
     uses: ./.github/workflows/terraform-reusable.yml
@@ -25,6 +26,7 @@ jobs:
     with:
       terraform_action: apply
       environment: dev
+      aws_role: arn:aws:iam::123456789012:role/dummy-role
 
   plan-stage:
     uses: ./.github/workflows/terraform-reusable.yml
@@ -32,6 +34,7 @@ jobs:
     with:
       terraform_action: plan
       environment: stage
+      aws_role: arn:aws:iam::123456789012:role/dummy-role
 
   apply-stage:
     uses: ./.github/workflows/terraform-reusable.yml
@@ -40,6 +43,7 @@ jobs:
     with:
       terraform_action: apply
       environment: stage
+      aws_role: arn:aws:iam::123456789012:role/dummy-role
 
   plan-prod:
     uses: ./.github/workflows/terraform-reusable.yml
@@ -47,6 +51,7 @@ jobs:
     with:
       terraform_action: plan
       environment: prod
+      aws_role: arn:aws:iam::123456789012:role/dummy-role
 
   apply-prod:
     uses: ./.github/workflows/terraform-reusable.yml
@@ -55,6 +60,7 @@ jobs:
     with:
       terraform_action: apply
       environment: prod
+      aws_role: arn:aws:iam::123456789012:role/dummy-role
 
 
 
