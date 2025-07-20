@@ -46,7 +46,8 @@ jobs:
         
       - name: configure aws credentials
         run: |
-          echo "assume role"
+          echo ${{ inputs.aws_role }}
+          echo ${{ inputs.aws_region }}
 
       - name: setup terraform
         uses: hashicorp/setup-terraform@v3
