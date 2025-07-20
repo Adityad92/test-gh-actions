@@ -12,7 +12,7 @@ permissions:
 
 jobs:
   plan-dev:
-    if: github.event_name == 'pull_request'
+    # if: github.event_name == 'pull_request'
     uses: ./.github/workflows/terraform-reusable.yml
     secrets: inherit
     with:
@@ -31,7 +31,7 @@ jobs:
       aws_role: arn:aws:iam::123456789012:role/dummy-role
 
   plan-stage:
-    if: github.event_name == 'pull_request'
+    # if: github.event_name == 'pull_request'
     uses: ./.github/workflows/terraform-reusable.yml
     secrets: inherit
     with:
@@ -50,7 +50,7 @@ jobs:
       aws_role: arn:aws:iam::123456789012:role/dummy-role
 
   plan-prod:
-    if: github.event_name == 'pull_request'
+    # if: github.event_name == 'pull_request'
     uses: ./.github/workflows/terraform-reusable.yml
     secrets: inherit
     with:
