@@ -23,8 +23,6 @@ jobs:
   apply-dev:
     needs: plan-dev
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-    environment:
-      name: dev
     uses: ./.github/workflows/terraform-reusable.yml
     secrets: inherit
     with:
@@ -44,8 +42,6 @@ jobs:
   apply-stage:
     needs: plan-stage
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-    environment:
-      name: stage
     uses: ./.github/workflows/terraform-reusable.yml
     secrets: inherit
     with:
@@ -65,8 +61,6 @@ jobs:
   apply-prod:
     needs: plan-prod
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-    environment:
-      name: prod
     uses: ./.github/workflows/terraform-reusable.yml
     secrets: inherit
     with:
