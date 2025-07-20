@@ -12,6 +12,7 @@ permissions:
 
 jobs:
   plan-dev:
+    if: github.event_name == 'pull_request'
     uses: ./.github/workflows/terraform-reusable.yml
     secrets: inherit
     with:
@@ -20,15 +21,19 @@ jobs:
       aws_role: arn:aws:iam::123456789012:role/dummy-role
 
   apply-dev:
+    needs: plan-dev
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    environment:
+      name: dev
     uses: ./.github/workflows/terraform-reusable.yml
     secrets: inherit
-    needs: plan-dev
     with:
       terraform_action: apply
       environment: dev
       aws_role: arn:aws:iam::123456789012:role/dummy-role
 
   plan-stage:
+    if: github.event_name == 'pull_request'
     uses: ./.github/workflows/terraform-reusable.yml
     secrets: inherit
     with:
@@ -37,15 +42,19 @@ jobs:
       aws_role: arn:aws:iam::123456789012:role/dummy-role
 
   apply-stage:
+    needs: plan-stage
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    environment:
+      name: stage
     uses: ./.github/workflows/terraform-reusable.yml
     secrets: inherit
-    needs: plan-stage
     with:
       terraform_action: apply
       environment: stage
       aws_role: arn:aws:iam::123456789012:role/dummy-role
 
   plan-prod:
+    if: github.event_name == 'pull_request'
     uses: ./.github/workflows/terraform-reusable.yml
     secrets: inherit
     with:
@@ -54,19 +63,16 @@ jobs:
       aws_role: arn:aws:iam::123456789012:role/dummy-role
 
   apply-prod:
+    needs: plan-prod
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    environment:
+      name: prod
     uses: ./.github/workflows/terraform-reusable.yml
     secrets: inherit
-    needs: plan-prod
     with:
       terraform_action: apply
       environment: prod
       aws_role: arn:aws:iam::123456789012:role/dummy-role
-
-
-
-
-
-
 
 
 
