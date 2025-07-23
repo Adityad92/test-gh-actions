@@ -1,0 +1,35 @@
+# terraform-pr.yml
+name: Terraform PR Plan
+on:
+  pull_request:
+    branches: [ main ]
+
+permissions:
+  id-token: write
+  contents: read
+  pull-requests: write
+
+jobs:
+  plan-dev:
+    uses: ./.github/workflows/terraform-reusable.yml
+    secrets: inherit
+    with:
+      terraform_action: plan
+      environment: dev
+      aws_role: arn:aws:iam::123456789012:role/dummy-role
+
+  plan-stage:
+    uses: ./.github/workflows/terraform-reusable.yml
+    secrets: inherit
+    with:
+      terraform_action: plan
+      environment: stage
+      aws_role: arn:aws:iam::123456789012:role/dummy-role
+
+  plan-prod:
+    uses: ./.github/workflows/terraform-reusable.yml
+    secrets: inherit
+    with:
+      terraform_action: plan
+      environment: prod
+      aws_role: arn:aws:iam::123456789012:role/dummy-role

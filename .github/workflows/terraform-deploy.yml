@@ -1,18 +1,15 @@
-name: terraform
+# terraform-deploy.yml
+name: Terraform Deploy
 on:
   push:
-    branches: [ main ]
-  pull_request:
     branches: [ main ]
 
 permissions:
   id-token: write
   contents: read
-  pull-requests: write
 
 jobs:
   plan-dev:
-    # if: github.event_name == 'pull_request'
     uses: ./.github/workflows/terraform-reusable.yml
     secrets: inherit
     with:
@@ -22,7 +19,6 @@ jobs:
 
   apply-dev:
     needs: plan-dev
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     uses: ./.github/workflows/terraform-reusable.yml
     secrets: inherit
     with:
@@ -31,7 +27,6 @@ jobs:
       aws_role: arn:aws:iam::123456789012:role/dummy-role
 
   plan-stage:
-    # if: github.event_name == 'pull_request'
     uses: ./.github/workflows/terraform-reusable.yml
     secrets: inherit
     with:
@@ -41,7 +36,6 @@ jobs:
 
   apply-stage:
     needs: [plan-stage, apply-dev]
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     uses: ./.github/workflows/terraform-reusable.yml
     secrets: inherit
     with:
@@ -50,7 +44,6 @@ jobs:
       aws_role: arn:aws:iam::123456789012:role/dummy-role
 
   plan-prod:
-    # if: github.event_name == 'pull_request'
     uses: ./.github/workflows/terraform-reusable.yml
     secrets: inherit
     with:
@@ -60,7 +53,6 @@ jobs:
 
   apply-prod:
     needs: [plan-prod, apply-stage]
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     uses: ./.github/workflows/terraform-reusable.yml
     secrets: inherit
     with:
