@@ -39,7 +39,8 @@ jobs:
     if: ${{ contains(fromJSON('["push", "pull_request"]'), github.event_name) && inputs.terraform_action == 'plan' || github.event_name == 'push' && inputs.terraform_action == 'apply' }}
     # environment: ${{ inputs.terraform_action }}
     environment:
-      name: ${{ inputs.terraform_action }}
+      # name: ${{ inputs.terraform_action }}
+      name: ${{ inputs.terraform_action == 'apply' && inputs.environment || '' }}
     runs-on:
       - ubuntu-latest
     steps:
