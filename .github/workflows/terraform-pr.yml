@@ -29,6 +29,7 @@ jobs:
         shell: bash
         
   plan-dev:
+    needs: checkov
     uses: ./.github/workflows/terraform-reusable.yml
     secrets: inherit
     with:
@@ -37,6 +38,7 @@ jobs:
       aws_role: arn:aws:iam::123456789012:role/dummy-role
 
   plan-stage:
+    needs: checkov
     uses: ./.github/workflows/terraform-reusable.yml
     secrets: inherit
     with:
@@ -45,6 +47,7 @@ jobs:
       aws_role: arn:aws:iam::123456789012:role/dummy-role
 
   plan-prod:
+    needs: checkov
     uses: ./.github/workflows/terraform-reusable.yml
     secrets: inherit
     with:
