@@ -27,6 +27,7 @@ jobs:
       aws_role: arn:aws:iam::123456789012:role/dummy-role
 
   plan-stage:
+    needs: [apply-dev]
     uses: ./.github/workflows/terraform-reusable.yml
     secrets: inherit
     with:
@@ -35,7 +36,7 @@ jobs:
       aws_role: arn:aws:iam::123456789012:role/dummy-role
 
   apply-stage:
-    needs: [plan-stage, apply-dev]
+    needs: [plan-stage]
     uses: ./.github/workflows/terraform-reusable.yml
     secrets: inherit
     with:
@@ -44,6 +45,7 @@ jobs:
       aws_role: arn:aws:iam::123456789012:role/dummy-role
 
   plan-prod:
+    needs: [apply-stage]
     uses: ./.github/workflows/terraform-reusable.yml
     secrets: inherit
     with:
@@ -52,7 +54,7 @@ jobs:
       aws_role: arn:aws:iam::123456789012:role/dummy-role
 
   apply-prod:
-    needs: [plan-prod, apply-stage]
+    needs: [plan-prod]
     uses: ./.github/workflows/terraform-reusable.yml
     secrets: inherit
     with:
