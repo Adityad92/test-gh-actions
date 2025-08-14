@@ -19,7 +19,7 @@ permissions:
 
 jobs:
 
-  terraform-vpc-cidr-checks:
+  cidr-check:
     uses: ./.github/workflows/validate.yml
     # with:
     #   target: eu-west-1
@@ -27,7 +27,7 @@ jobs:
   plan-prod:
     runs-on: ubuntu-latest
     environment: plan-prod
-    needs: terraform-vpc-cidr-checks
+    needs: cidr-check
     steps:
       - name: checkout
         uses: actions/checkout@v3
