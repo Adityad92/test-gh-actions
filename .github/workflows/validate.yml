@@ -8,7 +8,7 @@ on:
     #     required: false
     #     type: string
 
-permissions: inherit
+# permissions: inherit
 
 jobs:
   vpc-cidr-check:
