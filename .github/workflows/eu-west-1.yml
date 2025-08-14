@@ -1,0 +1,52 @@
+name: eu-west-1
+on:
+  workflow_dispatch:
+  push:
+    branches: [ main ]
+    paths:
+      - 'prod/eu-west-1/**'
+      - '.github/workflows/eu-west-1.yml'
+  pull_request:
+    branches: [ main ]
+    paths:
+      - 'prod/eu-west-1/**'
+      - '.github/workflows/eu-west-1.yml'
+
+permissions:
+  id-token: write
+  contents: read
+  pull-requests: write
+
+jobs:
+
+  terraform-vpc-cidr-checks:
+    uses: ./.github/workflows/validate.yml
+    # with:
+    #   target: eu-west-1
+
+  plan-prod:
+    runs-on: ubuntu-latest
+    environment: plan-prod
+    needs: terraform-vpc-cidr-checks
+    steps:
+      - name: checkout
+        uses: actions/checkout@v3
+
+      - name: plan
+        run: |
+          echo "plan"
+        shell: bash
+        
+  apply-prod:
+    runs-on: ubuntu-latest
+    environment: apply-prod
+    needs: plan-prod
+    if: github.event_name != 'pull_request'
+    steps:
+      - name: checkout
+        uses: actions/checkout@v3
+
+      - name: apply
+        run: |
+          echo "apply"
+        shell: bash

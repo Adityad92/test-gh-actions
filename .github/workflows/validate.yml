@@ -1,0 +1,36 @@
+name: vpc-cidr-check
+on:
+  workflow_call:
+    # inputs:
+    #   # optional, in case you ever want to pass region/path
+    #   target:
+    #     description: Optional target name or path to include in logs
+    #     required: false
+    #     type: string
+
+permissions: inherit
+
+jobs:
+  vpc-cidr-check:
+    name: Terraform VPC CIDR checks
+    runs-on: ubuntu-latest
+    outputs:
+      result: ${{ steps.result.outputs.result }}
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      # Only do the real validation on PRs; on main this step is skipped.
+      - name: Run VPC validate
+        if: ${{ github.event_name == 'pull_request' }}
+        run: |
+          echo "release/validate"
+        shell: bash
+        env:
+          LOG_LEVEL: DEBUG
+          LOG_FORMAT: TEXT
+
+      # # Provide a stable output even when the validation step is skipped
+      # - id: result
+      #   run: echo "result=ok" >> "$GITHUB_OUTPUT"
