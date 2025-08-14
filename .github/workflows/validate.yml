@@ -1,4 +1,4 @@
-name: vpc-cidr-check
+name: validate
 on:
   workflow_call:
     # inputs:
