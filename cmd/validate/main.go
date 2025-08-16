@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"os"
 
 	"github.com/Adityad92/test-gh-actions/pkg/utility"
@@ -48,11 +49,15 @@ func main() {
 
 	if isFailure {
 		logger.Info("===============================:\n")
-		logger.Error("Validation failed:\n" + report)
+		// logger.Error("Validation failed:\n" + report)
+		logger.Error("Validation failed:")
+		fmt.Print(report) // Printing directly to preserve formatting
 		os.Exit(1)
 	} else {
 		logger.Info("===============================:\n")
-		logger.Info("Validation succeeded:\n" + report)
+		// logger.Info("Validation succeeded:\n" + report)
+		logger.Info("Validation succeeded:")
+		fmt.Print(report) // Printing directly to preserve formatting
 	}
 
 }
