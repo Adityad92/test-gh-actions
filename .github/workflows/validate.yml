@@ -35,10 +35,13 @@ jobs:
       #     LOG_FORMAT: TEXT
 
       - name: Install Conftest
+        if: ${{ github.event_name == 'pull_request' }}
         run: |
           curl -L https://github.com/open-policy-agent/conftest/releases/latest/download/conftest_Linux_x86_64.tar.gz | tar xz
           ls -la
           mv conftest conftest-0.62.0/conftest /usr/local/bin/
+          ls -la /usr/local/bin
+        shell: bash
 
       # # Provide a stable output even when the validation step is skipped
       # - id: result
@@ -60,12 +63,3 @@ jobs:
       #   env:
       #     LOG_LEVEL: DEBUG
       #     LOG_FORMAT: TEXT
-      
-      - name: Install Conftest
-        if: ${{ github.event_name == 'pull_request' }}
-        run: |
-          curl -L https://github.com/open-policy-agent/conftest/releases/latest/download/conftest_Linux_x86_64.tar.gz | tar xz
-          ls -la
-          mv conftest conftest-0.62.0/conftest /usr/local/bin/
-          ls -la /usr/local/bin
-        shell: bash
