@@ -39,8 +39,10 @@ jobs:
         run: |
           curl -L https://github.com/open-policy-agent/conftest/archive/refs/tags/v0.62.0.tar.gz | tar xz
           ls -la
-          mv conftest conftest-0.62.0/conftest /usr/local/bin/
+          mv conftest-0.62.0 conftest 
+          mv conftest /usr/local/bin/
           ls -la /usr/local/bin
+          conftest --version
         shell: bash
 
       # # Provide a stable output even when the validation step is skipped
