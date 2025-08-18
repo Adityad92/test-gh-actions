@@ -1,4 +1,4 @@
-name: vpc-cidr-check
+name: validate
 on:
   workflow_call:
     # inputs:
@@ -20,23 +20,48 @@ jobs:
       - uses: actions/checkout@v3
         with:
           fetch-depth: 0
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: ./go.mod
 
       # Only do the real validation on PRs; on main this step is skipped.
-      - name: Run VPC validate
-        if: ${{ github.event_name == 'pull_request' }}
-        run: |
-          echo "release/validate"
-        shell: bash
-        env:
-          LOG_LEVEL: DEBUG
-          LOG_FORMAT: TEXT
+      # - name: Run VPC validate
+      #   if: ${{ github.event_name == 'pull_request' }}
+      #   run: |
+      #     echo "release/validate"
+      #   shell: bash
+      #   env:
+      #     LOG_LEVEL: DEBUG
+      #     LOG_FORMAT: TEXT
 
       - name: Install Conftest
+        if: ${{ github.event_name == 'pull_request' }}
         run: |
-          curl -L https://github.com/open-policy-agent/conftest/releases/latest/download/conftest_Linux_x86_64.tar.gz | tar xz
-          ls -la
-          mv conftest conftest-0.62.0/conftest /usr/local/bin/
+          CONFTEST_VERSION=v0.62.0
+          curl -L -o conftest.tar.gz "https://github.com/open-policy-agent/conftest/releases/download/${CONFTEST_VERSION}/conftest_${CONFTEST_VERSION#v}_Linux_x86_64.tar.gz"
+          tar xzf conftest.tar.gz
+          sudo mv conftest /usr/local/bin/
+          conftest --version
+          echo "Conftest installed successfully:"
+        shell: bash
 
       # # Provide a stable output even when the validation step is skipped
       # - id: result
       #   run: echo "result=ok" >> "$GITHUB_OUTPUT"
+
+      # - name: build vpc validate
+      #   run: | 
+      #     CGO_ENABLED=0 GOARCH=amd64 GOOS=linux GOPRIVATE=github.com \
+      #     go build -a \
+      #     -ldflags "-s -w -extldflags \"-static\" -X main.version=${VERSION}" \
+      #     -o release/validate \
+      #     github.com/Adityad92/test-gh-actions/cmd/validate
+      #   shell: bash
+
+      # - name: run vpc validate cidr check
+      #   if: ${{ github.event_name == 'pull_request' }}
+      #   run: |
+      #     release/validate
+      #   env:
+      #     LOG_LEVEL: DEBUG
+      #     LOG_FORMAT: TEXT
