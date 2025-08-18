@@ -37,12 +37,12 @@ jobs:
       - name: Install Conftest
         if: ${{ github.event_name == 'pull_request' }}
         run: |
-          curl -L https://github.com/open-policy-agent/conftest/archive/refs/tags/v0.62.0.tar.gz | tar xz
-          ls -la
-          mv conftest-0.62.0 conftest 
-          mv conftest /usr/local/bin/
-          ls -la /usr/local/bin
+          CONFTEST_VERSION=v0.62.0
+          curl -L -o conftest.tar.gz "https://github.com/open-policy-agent/conftest/releases/download/${CONFTEST_VERSION}/conftest_${CONFTEST_VERSION#v}_Linux_x86_64.tar.gz"
+          tar xzf conftest.tar.gz
+          sudo mv conftest /usr/local/bin/
           conftest --version
+          echo "Conftest installed successfully:"
         shell: bash
 
       # # Provide a stable output even when the validation step is skipped
