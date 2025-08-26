@@ -39,6 +39,11 @@ jobs:
           echo "Sanitize"
         shell: bash
 
+      - uses: actions/setup-go@v5
+        if: github.event_name == 'pull_request'
+        with:
+          go-version-file: ./go.mod
+
       - name: CIDR CHECK
         if: github.event_name == 'pull_request'
         run: |
@@ -75,7 +80,12 @@ jobs:
         run: |
           echo "Sanitize"
         shell: bash
-        
+
+      - uses: actions/setup-go@v5
+        if: github.event_name == 'pull_request'
+        with:
+          go-version-file: ./go.mod
+          
       - name: CIDR CHECK
         if: github.event_name == 'pull_request'
         run: |
