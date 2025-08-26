@@ -1,42 +1,26 @@
-name: vpc-cidr-check
+name: validate
 on:
-  workflow_call:
-    # inputs:
-    #   # optional, in case you ever want to pass region/path
-    #   target:
-    #     description: Optional target name or path to include in logs
-    #     required: false
-    #     type: string
-
-# permissions: inherit
+  pull_request:
+    branches: [ main ]
 
 jobs:
-  vpc-cidr-check:
-    name: Terraform VPC CIDR checks
+  terraform_checks:
     runs-on: ubuntu-latest
-    outputs:
-      result: ${{ steps.result.outputs.result }}
+    name: terraform checks
     steps:
       - uses: actions/checkout@v3
         with:
           fetch-depth: 0
 
-      # Only do the real validation on PRs; on main this step is skipped.
-      - name: Run VPC validate
-        if: ${{ github.event_name == 'pull_request' }}
+      - name: build vpc validate
+        run: | 
+          echo "plan"
+        shell: bash
+
+      - name: run vpc validate
         run: |
-          echo "release/validate"
+          echo "plan"
         shell: bash
         env:
           LOG_LEVEL: DEBUG
           LOG_FORMAT: TEXT
-
-      - name: Install Conftest
-        run: |
-          curl -L https://github.com/open-policy-agent/conftest/releases/latest/download/conftest_Linux_x86_64.tar.gz | tar xz
-          ls -la
-          mv conftest conftest-0.62.0/conftest /usr/local/bin/
-
-      # # Provide a stable output even when the validation step is skipped
-      # - id: result
-      #   run: echo "result=ok" >> "$GITHUB_OUTPUT"
