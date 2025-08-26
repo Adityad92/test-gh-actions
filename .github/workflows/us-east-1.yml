@@ -21,15 +21,9 @@ permissions:
 
 jobs:
 
-  cidr-check:
-    uses: ./.github/workflows/validate.yml
-    # with:
-    #   target: us-east-1
-
   plan-lab:
     runs-on: ubuntu-latest
     environment: plan-lab
-    needs: cidr-check
     steps:
       - name: checkout
         uses: actions/checkout@v3
@@ -37,6 +31,18 @@ jobs:
       - name: plan
         run: |
           echo "plan"
+        shell: bash
+
+      - name: Sanitize
+        if: github.event_name == 'pull_request'
+        run: |
+          echo "Sanitize"
+        shell: bash
+
+      - name: CIDR CHECK
+        if: github.event_name == 'pull_request'
+        run: |
+          echo "check"
         shell: bash
 
   apply-lab:
@@ -55,7 +61,6 @@ jobs:
   plan-prod:
     runs-on: ubuntu-latest
     environment: plan-prod
-    needs: cidr-check
     steps:
       - name: checkout
         uses: actions/checkout@v3
@@ -65,6 +70,18 @@ jobs:
           echo "plan"
         shell: bash
 
+      - name: Sanitize
+        if: github.event_name == 'pull_request'
+        run: |
+          echo "Sanitize"
+        shell: bash
+        
+      - name: CIDR CHECK
+        if: github.event_name == 'pull_request'
+        run: |
+          echo "check"
+        shell: bash
+        
   apply-prod:
     runs-on: ubuntu-latest
     environment: apply-prod
