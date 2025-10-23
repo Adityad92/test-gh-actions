@@ -1,0 +1,72 @@
+name: Single-Runner Concurrency Playground
+
+on:
+  push:
+    branches: ['**']
+  workflow_dispatch:
+    inputs:
+      shards:
+        description: 'Matrix list (JSON array)'
+        default: '["1","2","3"]'
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+
+  check-node:
+    if: ${{ github.actor != 'dependabot[bot]' }}
+    runs-on: [self-hosted, cglcloud-test]
+    steps:
+      - run: node -v
+
+  set-matrix:
+    needs: check-node
+    runs-on: ubuntu-latest
+    outputs:
+      shards: ${{ steps.set.outputs.shards }}
+    steps:
+      - id: set
+        run: |
+          if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+            echo "shards=${{ inputs.shards }}" >> $GITHUB_OUTPUT
+          else
+            echo 'shards=["1","2","3"]' >> $GITHUB_OUTPUT
+          fi
+
+  fan-out:
+    needs: set-matrix
+    runs-on: [self-hosted, cglcloud-test]
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: ${{ fromJson(needs.set-matrix.outputs.shards) }}
+    steps:
+      - run: |
+          echo "🧩 shard ${{ matrix.shard }} on $(hostname)"
+          sleep $((2 + RANDOM % 5))
+          echo "✅ done"
+
+  serial-1:
+    needs: fan-out
+    runs-on: [self-hosted, cglcloud-test]
+    steps:
+      - run: |
+          echo "🔗 serial-1 on $(hostname)"
+          sleep 3
+  serial-2:
+    needs: serial-1
+    runs-on: [self-hosted, cglcloud-test]
+    steps:
+      - run: |
+          echo "🔗 serial-2 on $(hostname)"
+          sleep 3
+
+  serial-3:
+    needs: serial-2
+    runs-on: [self-hosted, cglcloud-test]
+    steps:
+      - run: |
+          echo "🔗 serial-3 on $(hostname)"
+          sleep 3
