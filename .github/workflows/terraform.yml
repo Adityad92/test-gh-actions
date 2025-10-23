@@ -92,7 +92,7 @@ jobs:
         run: |
           echo "running unit tests..."
           sleep 3
-          exit 1  # make it fail to show red
+          # exit 1  # make it fail to show red
 
   dryrun:
     name: dryrun (run=${{ matrix.run }})
