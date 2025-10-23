@@ -1,72 +1,111 @@
-name: Single-Runner Concurrency Playground
-
+name: deployment
 on:
-  push:
-    branches: ['**']
-  workflow_dispatch:
-    inputs:
-      shards:
-        description: 'Matrix list (JSON array)'
-        default: '["1","2","3"]'
-
-concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
+  pull_request:
 
 jobs:
-
-  check-node:
-    if: ${{ github.actor != 'dependabot[bot]' }}
-    runs-on: [ubuntu-latest]
-    steps:
-      - run: node -v
-
-  set-matrix:
-    needs: check-node
+  set_env:
+    name: set_env
     runs-on: ubuntu-latest
-    outputs:
-      shards: ${{ steps.set.outputs.shards }}
     steps:
-      - id: set
+      - name: do set up
+        id: out
         run: |
-          if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
-            echo "shards=${{ inputs.shards }}" >> $GITHUB_OUTPUT
-          else
-            echo 'shards=["1","2","3"]' >> $GITHUB_OUTPUT
-          fi
+          echo "setup done"
+          sleep 2
 
-  fan-out:
-    needs: set-matrix
-    runs-on: [ubuntu-latest]
+  verify-db-migrations:
+    name: verify-db-migrations (db=${{ matrix.db }})
+    needs: set_env
+    runs-on: ubuntu-latest
     strategy:
-      fail-fast: false
       matrix:
-        shard: ${{ fromJson(needs.set-matrix.outputs.shards) }}
+        db: [mysql, postgres]
     steps:
-      - run: |
-          echo "🧩 shard ${{ matrix.shard }} on $(hostname)"
-          sleep $((2 + RANDOM % 5))
-          echo "✅ done"
-
-  serial-1:
-    needs: fan-out
-    runs-on: [ubuntu-latest]
-    steps:
-      - run: |
-          echo "🔗 serial-1 on $(hostname)"
-          sleep 3
-  serial-2:
-    needs: serial-1
-    runs-on: [ubuntu-latest]
-    steps:
-      - run: |
-          echo "🔗 serial-2 on $(hostname)"
+      - name: show which db
+        run: |
+          echo "Verifying DB migrations for ${{ matrix.db }}"
           sleep 3
 
-  serial-3:
-    needs: serial-2
-    runs-on: [ubuntu-latest]
+  get-ecr-login-password:
+    name: c... / get-ecr-login-password
+    needs: set_env
+    runs-on: ubuntu-latest
+    steps:
+      - name: fake ecr login
+        run: |
+          echo "retrieving ecr password..."
+          sleep 2
+
+  checks-no-checks:
+    name: checks / no-checks
+    needs: set_env
+    runs-on: ubuntu-latest
     steps:
       - run: |
-          echo "🔗 serial-3 on $(hostname)"
+          echo "no checks"
+          sleep 1
+
+  checks-generated-code:
+    name: checks / generated-code
+    needs: set_env
+    runs-on: ubuntu-latest
+    steps:
+      - run: |
+          echo "generated code"
+          sleep 2
+
+  checks-lint-go:
+    name: checks / lint-go
+    needs: set_env
+    runs-on: ubuntu-latest
+    steps:
+      - run: |
+          echo "linting go..."
+          sleep 2
+
+  checks-lint-apispecs:
+    name: checks / lint-apispecs
+    needs: set_env
+    runs-on: ubuntu-latest
+    steps:
+      - run: |
+          echo "linting apispecs..."
+          sleep 2
+
+  build-build:
+    name: build / build
+    needs: set_env
+    runs-on: ubuntu-latest
+    steps:
+      - run: |
+          echo "building..."
+          sleep 2
+
+  checks-unit-tests:
+    name: checks / unit-tests
+    needs:
+      - verify-db-migrations
+      - checks-generated-code
+    runs-on: ubuntu-latest
+    steps:
+      - name: run unit tests (failing intentionally)
+        run: |
+          echo "running unit tests..."
           sleep 3
+          exit 1  # make it fail to show red
+
+  dryrun:
+    name: dryrun (run=${{ matrix.run }})
+    needs:
+      - checks-generated-code
+      - checks-lint-go
+      - build-build
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        run: [dry-1, dry-2]
+    steps:
+      - name: dry run
+        run: |
+          echo "dry run: ${{ matrix.run }}"
+          sleep 2
