@@ -1,51 +1,53 @@
 name: Single-Runner Concurrency Playground
 
-###############################################################################
-# TRIGGERS ─ push on any branch  +  manual dispatch
-###############################################################################
 on:
   push:
     branches: ['**']
   workflow_dispatch:
     inputs:
-      shards:                     # JSON array, e.g. ["a","b","c"]
+      shards:
         description: 'Matrix list (JSON array)'
         default: '["1","2","3"]'
 
-###############################################################################
-# WORKFLOW-RUN CONCURRENCY  (only one run per branch at a time)
-###############################################################################
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
-###############################################################################
-# ALL JOBS USE THE SAME SELF-HOSTED RUNNER LABEL
-###############################################################################
 jobs:
 
-  # 0) Original “check-node” sample
   check-node:
     if: ${{ github.actor != 'dependabot[bot]' }}
     runs-on: [ubuntu-latest]
     steps:
       - run: node -v
 
-  # 1) Matrix fan-out  (queues on that same runner)
-  fan-out:
+  set-matrix:
     needs: check-node
+    runs-on: ubuntu-latest
+    outputs:
+      shards: ${{ steps.set.outputs.shards }}
+    steps:
+      - id: set
+        run: |
+          if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+            echo "shards=${{ inputs.shards }}" >> $GITHUB_OUTPUT
+          else
+            echo 'shards=["1","2","3"]' >> $GITHUB_OUTPUT
+          fi
+
+  fan-out:
+    needs: set-matrix
     runs-on: [ubuntu-latest]
     strategy:
       fail-fast: false
       matrix:
-        shard: ${{ fromJson(inputs.shards) }}
+        shard: ${{ fromJson(needs.set-matrix.outputs.shards) }}
     steps:
       - run: |
           echo "🧩 shard ${{ matrix.shard }} on $(hostname)"
           sleep $((2 + RANDOM % 5))
           echo "✅ done"
 
-  # 2) Simple serial chain
   serial-1:
     needs: fan-out
     runs-on: [ubuntu-latest]
@@ -53,7 +55,6 @@ jobs:
       - run: |
           echo "🔗 serial-1 on $(hostname)"
           sleep 3
-
   serial-2:
     needs: serial-1
     runs-on: [ubuntu-latest]
