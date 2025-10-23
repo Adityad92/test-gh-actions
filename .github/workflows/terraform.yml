@@ -1,72 +1,65 @@
-name: Single-Runner Concurrency Playground
+name: test1
 
 on:
-  push:
-    branches: ['**']
-  workflow_dispatch:
-    inputs:
-      shards:
-        description: 'Matrix list (JSON array)'
-        default: '["1","2","3"]'
+  pull_request:
 
+###############################################################################
+# Concurrency: Only one run per PR branch at a time
+###############################################################################
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
-
-  check-node:
-    if: ${{ github.actor != 'dependabot[bot]' }}
-    runs-on: [ubuntu-latest]
-    steps:
-      - run: node -v
-
-  set-matrix:
-    needs: check-node
+  set_env:
     runs-on: ubuntu-latest
-    outputs:
-      shards: ${{ steps.set.outputs.shards }}
     steps:
-      - id: set
-        run: |
-          if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
-            echo "shards=${{ inputs.shards }}" >> $GITHUB_OUTPUT
-          else
-            echo 'shards=["1","2","3"]' >> $GITHUB_OUTPUT
-          fi
+      - run: echo "Setting environment variables"
 
-  fan-out:
-    needs: set-matrix
-    runs-on: [ubuntu-latest]
+  get-ecr-login-password:
+    needs: set_env
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo "Fetching ECR login password"
+
+  unit-tests:
+    needs: set_env
+    runs-on: [ubuntu-latest] # ✅ Self-hosted runner for heavy tests
+    if: ${{ !contains(github.event.pull_request.labels.*.name, 'skip-tests') }}
+    steps:
+      - run: echo "Running unit tests"
+
+  checks:
+    needs: [get-ecr-login-password]
+    runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
-        shard: ${{ fromJson(needs.set-matrix.outputs.shards) }}
+        check: [no-checks, generated-code, lint-go, lint-apispecs]
     steps:
-      - run: |
-          echo "🧩 shard ${{ matrix.shard }} on $(hostname)"
-          sleep $((2 + RANDOM % 5))
-          echo "✅ done"
+      - run: echo "Running check: ${{ matrix.check }}"
 
-  serial-1:
-    needs: fan-out
+  build:
+    needs: checks
     runs-on: [ubuntu-latest]
     steps:
-      - run: |
-          echo "🔗 serial-1 on $(hostname)"
-          sleep 3
-  serial-2:
-    needs: serial-1
-    runs-on: [ubuntu-latest]
-    steps:
-      - run: |
-          echo "🔗 serial-2 on $(hostname)"
-          sleep 3
+      - run: echo "Building application"
 
-  serial-3:
-    needs: serial-2
-    runs-on: [ubuntu-latest]
+  verify-db-migrations:
+    needs: [set_env]
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [migration-1, migration-2]
     steps:
-      - run: |
-          echo "🔗 serial-3 on $(hostname)"
-          sleep 3
+      - run: echo "Verifying DB migration: ${{ matrix.shard }}"
+
+  dryrun:
+    needs: build
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        env: [staging, production]
+    steps:
+      - run: echo "Dry run for ${{ matrix.env }}"
